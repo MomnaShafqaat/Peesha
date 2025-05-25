@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "827500398421",
+    "project_id": "peesha-5c5f5",
+    "storage_bucket": "peesha-5c5f5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:827500398421:android:28b13940ec1597e0e291dc",
+        "android_client_info": {
+          "package_name": "com.example.peesha"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "827500398421-pl2g5rod1lku50ve3948j434744uerft.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5wi_0HCqPU7dO9b6sUBrBmYRKE2DV9FM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "827500398421-pl2g5rod1lku50ve3948j434744uerft.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
