@@ -1,33 +1,28 @@
-plugins {
-    id("com.google.gms.google-services") version "4.4.2" apply false
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        // You can include mirrors, but Google and MavenCentral are required.
+        google()
+        mavenCentral()
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") } // Required for Flutter
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.0") // ✅ Correct version for Gradle 8.2
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22") // ✅ Matches Flutter 3.16+
+        classpath("com.google.gms:google-services:4.3.15") // ✅ Firebase
+        // ❌ Do NOT add flutter-gradle-plugin manually — Flutter handles this automatically.
+    }
 }
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") } // Flutter artifacts
     }
 }
 
-buildscript {
-    dependencies {
-        classpath("com.google.gms:google-services:4.3.15")
-    }
+plugins {
+    id("com.google.gms.google-services") version "4.3.15" apply false
 }
-
-
-
-val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
-rootProject.layout.buildDirectory.value(newBuildDir)
-
-subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
-}
-subprojects {
-    project.evaluationDependsOn(":app")
-}
-
-tasks.register<Delete>("clean") {
-    delete(rootProject.layout.buildDirectory)
-}
-
