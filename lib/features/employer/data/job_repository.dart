@@ -1,92 +1,35 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'job_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'job_model.dart';
 
 class JobRepository {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String collectionPath = 'Jobs';
 
-  Future<Job> postJob(Job job) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/jobs'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(job.toJson()),
-    );
-
-    if (response.statusCode == 201) {
-      return Job.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to post job: ${response.statusCode}');
-    }
+  // Create a job
+  Future<void> createJob(Job job) async {
+    await _firestore.collection(collectionPath).add(job.toJson());
   }
 
-
-  final String baseUrl = 'http://your-node-server.com/api'; // Replace with your actual backend URL
-
-  // Post a new job
-  Future<Job> createJob(Job job) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/jobs'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(job.toJson()),
-    );
-
-    if (response.statusCode == 201) {
-      return Job.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to create job. Status code: ${response.statusCode}');
-    }
-  }
-
-  // Get all jobs posted by an employer
-  Future<List<Job>> getJobsByEmployer(String employerId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/jobs?employerId=$employerId'),
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> jobsJson = json.decode(response.body);
-      return jobsJson.map((json) => Job.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load jobs. Status code: ${response.statusCode}');
-    }
-  }
-
-  // Update an existing job
-  Future<Job> updateJob(Job job) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/jobs/${job.id}'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(job.toJson()),
-    );
-
-    if (response.statusCode == 200) {
-      return Job.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to update job. Status code: ${response.statusCode}');
-    }
-  }
-
-  // Delete a job
-  Future<void> deleteJob(String jobId) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/jobs/$jobId'),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete job. Status code: ${response.statusCode}');
-    }
-  }
-
-  // Get all available jobs (for employees to browse)
+  // Get all jobs (for home page)
   Future<List<Job>> getAllJobs() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/jobs'),
-    );
+    final snapshot = await _firestore.collection(collectionPath).get();
+    return snapshot.docs
+        .map((doc) => Job.fromJson(doc.data(), doc.id))
+        .toList();
+  }
 
-    if (response.statusCode == 200) {
-      final List<dynamic> jobsJson = json.decode(response.body);
-      return jobsJson.map((json) => Job.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load all jobs. Status code: ${response.statusCode}');
-    }
+  // Get jobs by employerId (filtered)
+  Future<List<Job>> getJobsByEmployer(String employerId) async {
+    final snapshot = await _firestore
+        .collection(collectionPath)
+        .where('employerId', isEqualTo: employerId)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => Job.fromJson(doc.data(), doc.id))
+        .toList();
   }
 }

@@ -9,4 +9,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MyApp());
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Center(child: Text('Something went wrong:\n${details.exception}', textAlign: TextAlign.center));
+  };
+
 }
