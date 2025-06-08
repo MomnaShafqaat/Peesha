@@ -308,7 +308,6 @@ class Experience {
     );
   }
 }
-
 class Certificate {
   final String name;
   final String issuingOrganization;

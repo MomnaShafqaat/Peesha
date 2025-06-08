@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:peesha/features/auth/presentation/screens/login_page.dart';// Adjust path if needed
+import 'package:peesha/features/auth/presentation/screens/login_page.dart';
 import 'package:peesha/features/employer/data/employer_model.dart';
+
 class EmployerProfileScreen extends StatefulWidget {
   const EmployerProfileScreen({super.key});
 
@@ -24,9 +26,42 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
   String _website = '';
   String _about = '';
 
-  // State to track if profile is submitted
   bool _isProfileSubmitted = false;
   Employer? _submittedEmployer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmployerProfile();
+  }
+
+  void _loadEmployerProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('employerProfiles')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        final employer = Employer.fromJson(data);
+        setState(() {
+          _submittedEmployer = employer;
+          _isProfileSubmitted = true;
+
+          // Populate form fields with existing data
+          _companyName = employer.companyName;
+          _industry = employer.industry;
+          _location = employer.location;
+          _contactEmail = employer.contactEmail;
+          _contactPhone = employer.contactPhone;
+          _website = employer.website;
+          _about = employer.about;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +89,6 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
     );
   }
 
-  /// Build profile form
   Widget _buildProfileForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -81,6 +115,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
 
             _buildTextField(
               label: 'Company Name*',
+              initialValue: _companyName,
               validator: _requiredValidator,
               onSaved: (val) => _companyName = val ?? '',
             ),
@@ -88,6 +123,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
 
             _buildTextField(
               label: 'Industry*',
+              initialValue: _industry,
               validator: _requiredValidator,
               onSaved: (val) => _industry = val ?? '',
             ),
@@ -95,6 +131,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
 
             _buildTextField(
               label: 'Location*',
+              initialValue: _location,
               validator: _requiredValidator,
               onSaved: (val) => _location = val ?? '',
             ),
@@ -106,6 +143,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
 
             _buildTextField(
               label: 'Contact Email*',
+              initialValue: _contactEmail,
               keyboardType: TextInputType.emailAddress,
               validator: (val) {
                 if (val == null || val.isEmpty) return 'Required';
@@ -118,6 +156,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
 
             _buildTextField(
               label: 'Contact Phone*',
+              initialValue: _contactPhone,
               keyboardType: TextInputType.phone,
               validator: _requiredValidator,
               onSaved: (val) => _contactPhone = val ?? '',
@@ -130,6 +169,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
 
             _buildTextField(
               label: 'Website',
+              initialValue: _website,
               keyboardType: TextInputType.url,
               prefixText: 'https://',
               onSaved: (val) => _website = val ?? '',
@@ -143,6 +183,7 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
                 alignLabelWithHint: true,
               ),
               maxLines: 4,
+              initialValue: _about,
               onSaved: (val) => _about = val ?? '',
             ),
             const SizedBox(height: 24),
@@ -161,41 +202,88 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
       ),
     );
   }
-
-  /// Build profile display
   Widget _buildProfileView(Employer employer) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.blue[100],
-                backgroundImage: _image != null ? FileImage(_image!) : null,
-                child: _image == null
-                    ? const Icon(Icons.business, size: 40, color: Colors.blue)
-                    : null,
+            CircleAvatar(
+              radius: 60,
+              backgroundColor: Colors.blue[100],
+              backgroundImage: _image != null ? FileImage(_image!) : null,
+              child: _image == null
+                  ? const Icon(Icons.business, size: 50, color: Colors.blue)
+                  : null,
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              employer.companyName,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
-            Text("Company Name: ${employer.companyName}"),
-            Text("Industry: ${employer.industry}"),
-            Text("Location: ${employer.location}"),
-            Text("Email: ${employer.contactEmail}"),
-            Text("Phone: ${employer.contactPhone}"),
-            Text("Website: ${employer.website}"),
-            Text("About: ${employer.about}"),
+            const SizedBox(height: 8),
+            Text(
+              employer.industry,
+              style: const TextStyle(
+                fontSize: 18,
+                fontStyle: FontStyle.italic,
+                color: Colors.black54,
+              ),
+            ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _isProfileSubmitted = false;
-                });
-              },
-              child: const Text('Edit Profile'),
+
+            Card(
+              elevation: 3,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _profileItem("📍 Location", employer.location),
+                    _profileItem("📧 Email", employer.contactEmail),
+                    _profileItem("📞 Phone", employer.contactPhone),
+                    _profileItem("🌐 Website", employer.website),
+                    const SizedBox(height: 12),
+                    const Text("📝 About Company",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      employer.about,
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _isProfileSubmitted = false;
+                  });
+                },
+                icon: const Icon(Icons.edit),
+                label: const Text('Edit Profile'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -203,13 +291,34 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
     );
   }
 
-  /// Custom text field builder
+  Widget _profileItem(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$title: ",
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : "Not Provided",
+              style: const TextStyle(color: Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTextField({
     required String label,
     TextInputType? keyboardType,
     String? prefixText,
     String? Function(String?)? validator,
     void Function(String?)? onSaved,
+    String? initialValue,
   }) {
     return TextFormField(
       decoration: InputDecoration(
@@ -220,18 +329,20 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
       keyboardType: keyboardType,
       validator: validator,
       onSaved: onSaved,
+      initialValue: initialValue,
     );
   }
 
-  /// Required field validator
   String? _requiredValidator(String? value) {
     return value == null || value.isEmpty ? 'Required' : null;
   }
 
-  /// Save profile handler
-  void _saveProfile() {
+  void _saveProfile() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
       final employer = Employer(
         companyName: _companyName,
@@ -252,6 +363,11 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
         companyType: '',
       );
 
+      await FirebaseFirestore.instance
+          .collection('employerProfiles')
+          .doc(user.uid)
+          .set(employer.toJson());
+
       setState(() {
         _submittedEmployer = employer;
         _isProfileSubmitted = true;
@@ -260,12 +376,9 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile saved successfully')),
       );
-
-      // TODO: Save employer to Firebase or backend
     }
   }
 
-  /// Pick image from gallery
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
