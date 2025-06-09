@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peesha/core/utils/app_constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:peesha/features/employer/data/job_model.dart';
+import 'package:peesha/core/utils/app_constants.dart';
 
 class JobPostScreen extends StatefulWidget {
   const JobPostScreen({super.key});
@@ -14,26 +15,40 @@ class JobPostScreen extends StatefulWidget {
 class _JobPostScreenState extends State<JobPostScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _salaryController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _salaryController = TextEditingController();
 
   String _jobType = 'Full-time';
   String _experienceLevel = 'Mid-level';
   DateTime _postedDate = DateTime.now();
   DateTime _deadline = DateTime.now().add(const Duration(days: 30));
 
-  final String _employerId = 'temp-id'; // replace later
-  final String _employerName = 'Temp Employer'; // replace later
+  final String _employerId = FirebaseAuth.instance.currentUser?.uid ?? '';
+  final String _employerName = 'Temp Employer'; // Replace later if needed
+
+  bool _showForm = false;
+
+  void _clearForm() {
+    _titleController.clear();
+    _descriptionController.clear();
+    _locationController.clear();
+    _salaryController.clear();
+    _jobType = 'Full-time';
+    _experienceLevel = 'Mid-level';
+    _postedDate = DateTime.now();
+    _deadline = DateTime.now().add(const Duration(days: 30));
+  }
 
   Future<void> _selectDate(BuildContext context, bool isDeadline) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: isDeadline ? _deadline : _postedDate,
       firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
+      lastDate: DateTime(2100),
     );
+
     if (picked != null) {
       setState(() {
         if (isDeadline) {
@@ -44,6 +59,7 @@ class _JobPostScreenState extends State<JobPostScreen> {
       });
     }
   }
+
   Future<void> _submitJob() async {
     if (_formKey.currentState!.validate()) {
       final job = Job(
@@ -62,141 +78,205 @@ class _JobPostScreenState extends State<JobPostScreen> {
 
       try {
         await FirebaseFirestore.instance.collection('Job').add(job.toJson());
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('✅ Job posted successfully!')),
+            const SnackBar(content: Text('✅ Job posted successfully')),
           );
-
-          // Wait 1 second before going back to previous screen
-          await Future.delayed(const Duration(seconds: 1));
-
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
+          setState(() {
+            _showForm = false;
+            _clearForm();
+          });
         }
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error posting job: $e')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ Error: $e')),
+        );
       }
     }
+  }
+
+  Widget _buildJobForm() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Job Title'),
+              validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Description'),
+              validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _locationController,
+              decoration: const InputDecoration(labelText: 'Location'),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _salaryController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Salary'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _jobType,
+              decoration: const InputDecoration(labelText: 'Job Type'),
+              items: AppConstants.jobTypes
+                  .map((type) =>
+                  DropdownMenuItem(value: type, child: Text(type)))
+                  .toList(),
+              onChanged: (val) => setState(() => _jobType = val!),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _experienceLevel,
+              decoration: const InputDecoration(labelText: 'Experience Level'),
+              items: AppConstants.experienceLevels
+                  .map((level) =>
+                  DropdownMenuItem(value: level, child: Text(level)))
+                  .toList(),
+              onChanged: (val) => setState(() => _experienceLevel = val!),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              title: const Text('Posted Date'),
+              subtitle: Text(DateFormat('yyyy-MM-dd').format(_postedDate)),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () => _selectDate(context, false),
+            ),
+            ListTile(
+              title: const Text('Deadline'),
+              subtitle: Text(DateFormat('yyyy-MM-dd').format(_deadline)),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () => _selectDate(context, true),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _submitJob,
+              child: const Text('Post Job'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Job')
+          .where('employerId', isEqualTo: _employerId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No jobs posted yet.'));
+        }
+
+        final jobs = snapshot.data!.docs;
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: jobs.length,
+          itemBuilder: (context, index) {
+            final doc = jobs[index];
+            final job = Job.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                title: Text(job.title),
+                subtitle: Text('${job.location} • ${job.jobType}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () {
+                        setState(() {
+                          _titleController.text = job.title;
+                          _descriptionController.text = job.description;
+                          _locationController.text = job.location;
+                          _salaryController.text = job.salary;
+                          _jobType = job.jobType;
+                          _experienceLevel = job.experienceLevel;
+                          _postedDate =
+                              DateFormat('yyyy-MM-dd').parse(job.datePosted);
+                          _deadline =
+                              DateFormat('yyyy-MM-dd').parse(job.dateDeadline);
+                          _showForm = true;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Delete Job'),
+                            content: const Text(
+                                'Are you sure you want to delete this job?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirmed == true) {
+                          await FirebaseFirestore.instance
+                              .collection('Job')
+                              .doc(doc.id)
+                              .delete();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Post a Job'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _submitJob,
-          ),
-        ],
+        title: const Text('My Posted Jobs'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Job Title',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter job title'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Job Description',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter job description'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _salaryController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Salary',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _jobType,
-                decoration: const InputDecoration(
-                  labelText: 'Job Type',
-                  border: OutlineInputBorder(),
-                ),
-                items: AppConstants.jobTypes
-                    .map((type) => DropdownMenuItem(
-                  value: type,
-                  child: Text(type),
-                ))
-                    .toList(),
-                onChanged: (value) => setState(() => _jobType = value!),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _experienceLevel,
-                decoration: const InputDecoration(
-                  labelText: 'Experience Level',
-                  border: OutlineInputBorder(),
-                ),
-                items: AppConstants.experienceLevels
-                    .map((level) => DropdownMenuItem(
-                  value: level,
-                  child: Text(level),
-                ))
-                    .toList(),
-                onChanged: (value) => setState(() => _experienceLevel = value!),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                title: const Text('Posted Date'),
-                subtitle: Text(DateFormat('yyyy-MM-dd').format(_postedDate)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () => _selectDate(context, false),
-              ),
-              ListTile(
-                title: const Text('Application Deadline'),
-                subtitle: Text(DateFormat('yyyy-MM-dd').format(_deadline)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () => _selectDate(context, true),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submitJob,
-                child: const Text('Post Job'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
-            ],
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(_showForm ? Icons.close : Icons.add),
+        onPressed: () {
+          setState(() {
+            _showForm = !_showForm;
+            if (!_showForm) _clearForm();
+          });
+        },
       ),
+      body: _showForm ? _buildJobForm() : _buildJobList(),
     );
   }
 }
