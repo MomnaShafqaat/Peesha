@@ -1,4 +1,4 @@
-class Education {
+/*class Education {
   final String level; // SSC, HSSC, O Levels, A Levels, Bachelor's, etc.
   final String instituteName;
   final String boardOrUniversity; // BISE, Cambridge, University name
@@ -52,4 +52,89 @@ class Education {
       'isInternational': isInternational,
     };
   }
+
+factory Education.empty() => Education(
+level: '',
+instituteName: '',
+boardOrUniversity: '',
+country: '',
+fieldOfStudy: '',
+startDate: '',
+endDate: '',
+result: '',
+isOngoing: false,
+isInternational: false,
+);
+
+}*/
+// lib/features/employee/data/education.dart
+
+class Education {
+  final String level;
+  final String instituteName;
+  final String boardOrUniversity;
+  final String country;
+  final String fieldOfStudy;
+  final String startDate;
+  final String endDate;
+  final String result;
+  final bool isOngoing;
+  final bool isInternational;
+
+  Education({
+    required this.level,
+    required this.instituteName,
+    required this.boardOrUniversity,
+    required this.country,
+    required this.fieldOfStudy,
+    required this.startDate,
+    required this.endDate,
+    required this.result,
+    this.isOngoing = false,
+    this.isInternational = false,
+  });
+
+  factory Education.fromJson(Map<String, dynamic> json) {
+    return Education(
+      level: json['level'],
+      instituteName: json['instituteName'],
+      boardOrUniversity: json['boardOrUniversity'],
+      country: json['country'],
+      fieldOfStudy: json['fieldOfStudy'],
+      startDate: json['startDate'],
+      endDate: json['endDate'],
+      result: json['result'],
+      isOngoing: json['isOngoing'] ?? false,
+      isInternational: json['isInternational'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() =>
+      {
+        'level': level,
+        'instituteName': instituteName,
+        'boardOrUniversity': boardOrUniversity,
+        'country': country,
+        'fieldOfStudy': fieldOfStudy,
+        'startDate': startDate,
+        'endDate': endDate,
+        'result': result,
+        'isOngoing': isOngoing,
+        'isInternational': isInternational,
+      };
+
+
+  factory Education.empty() =>
+      Education(
+        level: '',
+        instituteName: '',
+        boardOrUniversity: '',
+        country: '',
+        fieldOfStudy: '',
+        startDate: '',
+        endDate: '',
+        result: '',
+        isOngoing: false,
+        isInternational: false,
+      );
 }

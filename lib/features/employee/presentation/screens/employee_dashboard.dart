@@ -6,6 +6,8 @@ import 'employee_profile_screen.dart';
 import 'employee_profile_setup.dart';
 import 'employee_home_screen.dart';
 
+// You can create this screen later for showing saved/applied jobs
+// import 'employee_jobs_screen.dart';
 
 class EmployeeDashboard extends StatefulWidget {
   const EmployeeDashboard({super.key});
@@ -19,7 +21,7 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
 
   final List<Widget> _screens = [
     EmployeeHomeScreen(),
-    // EmployeeJobsScreen(),  // Optional: for Applied/Saved jobs tab
+    // EmployeeJobsScreen(), // You can add this later
     EmployeeProfileScreen(),
   ];
 
@@ -27,8 +29,6 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Welcome, Employee'),
-        backgroundColor: Colors.deepPurple,
         actions: [
           IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
         ],
@@ -44,7 +44,8 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
-          // BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'My Jobs'), // Optional
+          // Add this when EmployeeJobsScreen is created
+          // BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
