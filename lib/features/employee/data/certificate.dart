@@ -1,9 +1,9 @@
 class Certificate {
-  String title;
-  String organization;
-  String issueDate;
-  String expiryDate;
-  String certificateUrl; // optional download or view URL from Firebase Storage
+  final String title;
+  final String organization;
+  final String issueDate;
+  final String expiryDate;
+  final String certificateUrl;
 
   Certificate({
     required this.title,
@@ -13,23 +13,27 @@ class Certificate {
     required this.certificateUrl,
   });
 
-  factory Certificate.fromJson(Map<String, dynamic> json) {
-    return Certificate(
-      title: json['title'],
-      organization: json['organization'],
-      issueDate: json['issueDate'],
-      expiryDate: json['expiryDate'],
-      certificateUrl: json['certificateUrl'],
-    );
-  }
+  factory Certificate.fromJson(Map<String, dynamic> json) => Certificate(
+    title: json['title'],
+    organization: json['organization'],
+    issueDate: json['issueDate'],
+    expiryDate: json['expiryDate'],
+    certificateUrl: json['certificateUrl'],
+  );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'organization': organization,
-      'issueDate': issueDate,
-      'expiryDate': expiryDate,
-      'certificateUrl': certificateUrl,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'organization': organization,
+    'issueDate': issueDate,
+    'expiryDate': expiryDate,
+    'certificateUrl': certificateUrl,
+  };
+
+  factory Certificate.empty() => Certificate(
+    title: '',
+    organization: '',
+    issueDate: '',
+    expiryDate: '',
+    certificateUrl: '',
+  );
 }

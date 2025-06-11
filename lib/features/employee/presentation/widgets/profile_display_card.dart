@@ -1,36 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:peesha/features/employee/data/employee_model.dart';
+import 'package:peesha/features/employee/presentation/screens/profile_display.dart';
 
-class ProfileDisplayCard extends StatelessWidget {
-  final Map<String, dynamic> profileData;
+void saveProfile(Map<String, dynamic> data, BuildContext context) async {
+  final user = FirebaseAuth.instance.currentUser;
 
-  const ProfileDisplayCard({super.key, required this.profileData});
+  if (user != null) {
+    // Add ID and timestamp
+    data['id'] = user.uid;
+    data['lastUpdated'] = FieldValue.serverTimestamp();
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(12),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              profileData['fullName'] ?? 'Name',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text('📧 Email: ${profileData['email'] ?? ''}'),
-            Text('📱 Phone: ${profileData['phone'] ?? ''}'),
-            Text('🌆 City: ${profileData['city'] ?? ''}'),
-            Text('🌍 Country: ${profileData['country'] ?? ''}'),
-            Text('👩‍💼 Profession: ${profileData['profession'] ?? ''}'),
-            const SizedBox(height: 10),
-            Text('📝 Bio:', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(profileData['bio'] ?? ''),
-          ],
+    try {
+      // Save profile to Firestore with merge
+      await FirebaseFirestore.instance
+          .collection('employeeProfiles')
+          .doc(user.uid)
+          .set(data, SetOptions(merge: true));
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile saved successfully!')),
+      );
+
+      // Navigate to ProfileDisplay with updated data
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance
+                .collection('employeeProfiles')
+                .doc(user.uid)
+                .get(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              final profileData = snapshot.data?.data() as Map<String, dynamic>?;
+
+              final employee = profileData != null
+                  ? Employee.fromJson(profileData)
+                  : Employee.empty();
+
+              return ProfileDisplay(employee: employee);
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save profile: $e')),
+      );
+    }
   }
 }
