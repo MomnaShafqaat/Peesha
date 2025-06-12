@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:peesha/features/employer/data/job_model.dart';
 import 'package:peesha/core/utils/app_constants.dart';
+import 'package:peesha/features/employer/presentation/screens/employer_profile_screen.dart';
 
 class JobPostScreen extends StatefulWidget {
   const JobPostScreen({super.key});
@@ -14,7 +15,8 @@ class JobPostScreen extends StatefulWidget {
 
 class _JobPostScreenState extends State<JobPostScreen> {
   final _formKey = GlobalKey<FormState>();
-
+  bool _isProfileComplete = false;
+  bool _isLoading = true;
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
@@ -26,7 +28,7 @@ class _JobPostScreenState extends State<JobPostScreen> {
   DateTime _deadline = DateTime.now().add(const Duration(days: 30));
 
   final String _employerId = FirebaseAuth.instance.currentUser?.uid ?? '';
-  final String _employerName = 'Temp Employer'; // Replace later if needed
+  String _employerName = 'Temp Employer';
 
   bool _showForm = false;
 
@@ -95,6 +97,26 @@ class _JobPostScreenState extends State<JobPostScreen> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _checkEmployerProfile();
+  }
+
+  Future<void> _checkEmployerProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc = await FirebaseFirestore.instance.collection('employerProfiles').doc(uid).get();
+    final profile = doc.data();
+
+    setState(() {
+      _isProfileComplete = doc.exists;
+      _employerName = profile?['companyName'] ?? 'Temp Employer';
+      _isLoading = false;
+    });
+  }
+
   Widget _buildJobForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -105,16 +127,14 @@ class _JobPostScreenState extends State<JobPostScreen> {
             TextFormField(
               controller: _titleController,
               decoration: const InputDecoration(labelText: 'Job Title'),
-              validator: (value) =>
-              value == null || value.isEmpty ? 'Required' : null,
+              validator: (value) => value == null || value.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _descriptionController,
               maxLines: 3,
               decoration: const InputDecoration(labelText: 'Description'),
-              validator: (value) =>
-              value == null || value.isEmpty ? 'Required' : null,
+              validator: (value) => value == null || value.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -132,8 +152,7 @@ class _JobPostScreenState extends State<JobPostScreen> {
               value: _jobType,
               decoration: const InputDecoration(labelText: 'Job Type'),
               items: AppConstants.jobTypes
-                  .map((type) =>
-                  DropdownMenuItem(value: type, child: Text(type)))
+                  .map((type) => DropdownMenuItem(value: type, child: Text(type)))
                   .toList(),
               onChanged: (val) => setState(() => _jobType = val!),
             ),
@@ -142,8 +161,7 @@ class _JobPostScreenState extends State<JobPostScreen> {
               value: _experienceLevel,
               decoration: const InputDecoration(labelText: 'Experience Level'),
               items: AppConstants.experienceLevels
-                  .map((level) =>
-                  DropdownMenuItem(value: level, child: Text(level)))
+                  .map((level) => DropdownMenuItem(value: level, child: Text(level)))
                   .toList(),
               onChanged: (val) => setState(() => _experienceLevel = val!),
             ),
@@ -213,10 +231,8 @@ class _JobPostScreenState extends State<JobPostScreen> {
                           _salaryController.text = job.salary;
                           _jobType = job.jobType;
                           _experienceLevel = job.experienceLevel;
-                          _postedDate =
-                              DateFormat('yyyy-MM-dd').parse(job.datePosted);
-                          _deadline =
-                              DateFormat('yyyy-MM-dd').parse(job.dateDeadline);
+                          _postedDate = DateFormat('yyyy-MM-dd').parse(job.datePosted);
+                          _deadline = DateFormat('yyyy-MM-dd').parse(job.dateDeadline);
                           _showForm = true;
                         });
                       },
@@ -228,26 +244,16 @@ class _JobPostScreenState extends State<JobPostScreen> {
                           context: context,
                           builder: (ctx) => AlertDialog(
                             title: const Text('Delete Job'),
-                            content: const Text(
-                                'Are you sure you want to delete this job?'),
+                            content: const Text('Are you sure you want to delete this job?'),
                             actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Delete'),
-                              ),
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
                             ],
                           ),
                         );
 
                         if (confirmed == true) {
-                          await FirebaseFirestore.instance
-                              .collection('Job')
-                              .doc(doc.id)
-                              .delete();
+                          await FirebaseFirestore.instance.collection('Job').doc(doc.id).delete();
                         }
                       },
                     ),
@@ -261,13 +267,49 @@ class _JobPostScreenState extends State<JobPostScreen> {
     );
   }
 
+  Widget _buildProfilePrompt() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.warning_amber_rounded, size: 60, color: Colors.orange),
+            const SizedBox(height: 20),
+            const Text(
+              "You need to complete your company profile before posting jobs.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EmployerProfileScreen()),
+                );
+              },
+              icon: const Icon(Icons.business),
+              label: const Text("Setup Profile"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Posted Jobs'),
-      ),
-      floatingActionButton: FloatingActionButton(
+      appBar: AppBar(title: const Text('My Posted Jobs')),
+      floatingActionButton: _isProfileComplete
+          ? FloatingActionButton(
         child: Icon(_showForm ? Icons.close : Icons.add),
         onPressed: () {
           setState(() {
@@ -275,8 +317,13 @@ class _JobPostScreenState extends State<JobPostScreen> {
             if (!_showForm) _clearForm();
           });
         },
-      ),
-      body: _showForm ? _buildJobForm() : _buildJobList(),
+      )
+          : null,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _isProfileComplete
+          ? (_showForm ? _buildJobForm() : _buildJobList())
+          : _buildProfilePrompt(),
     );
   }
 }

@@ -419,7 +419,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const SignupScreen(role: UserRole.employer),
+                        builder: (_) => const SignupScreen(), //  Let user choose role
                       ),
                     );
                   },
