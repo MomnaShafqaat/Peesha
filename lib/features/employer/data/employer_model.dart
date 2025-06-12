@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Employer {
   String? id;
    String companyName;
@@ -57,32 +59,39 @@ class Employer {
   factory Employer.fromJson(Map<String, dynamic> json) {
     return Employer(
       id: json['_id'],
-      companyName: json['companyName'],
-      industry: json['industry'],
-      companySize: json['companySize'],
-      location: json['location'],
-      address: json['address'],
-      city: json['city'],
-      state: json['state'],
-      country: json['country'],
-      postalCode: json['postalCode'],
-      contactEmail: json['contactEmail'],
-      contactPhone: json['contactPhone'],
-      contactPersonName: json['contactPersonName'],
-      about: json['about'],
-      website: json['website'],
+      companyName: json['companyName'] ?? json['company_name'] ?? '',
+      industry: json['industry'] ?? '',
+      companySize: json['companySize'] ?? '',
+      location: json['location'] ?? '',
+      address: json['address'] ?? '',
+      city: json['city'] ?? '',
+      state: json['state'] ?? '',
+      country: json['country'] ?? '',
+      postalCode: json['postalCode'] ?? '',
+      contactEmail: json['contactEmail'] ?? '',
+      contactPhone: json['contactPhone'] ?? json['contact_phone'] ?? '',
+      contactPersonName: json['contactPersonName'] ?? '',
+      about: json['about'] ?? '',
+      website: json['website'] ?? '',
       logoUrl: json['logoUrl'] ?? '',
       coverImageUrl: json['coverImageUrl'] ?? '',
       socialMediaLinks: List<String>.from(json['socialMediaLinks'] ?? []),
-      foundedDate: DateTime.parse(json['foundedDate']),
+      foundedDate: (json['foundedDate'] is Timestamp)
+          ? (json['foundedDate'] as Timestamp).toDate()
+          : DateTime.tryParse(json['foundedDate'] ?? '') ?? DateTime.now(),
       jobPostings: List<String>.from(json['jobPostings'] ?? []),
       benefits: List<String>.from(json['benefits'] ?? []),
-      companyType: json['companyType'],
+      companyType: json['companyType'] ?? '',
       isVerified: json['isVerified'] ?? false,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: (json['createdAt'] is Timestamp)
+          ? (json['createdAt'] as Timestamp).toDate()
+          : DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      updatedAt: (json['updatedAt'] is Timestamp)
+          ? (json['updatedAt'] as Timestamp).toDate()
+          : DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
     );
   }
+
 
   Map<String, dynamic> toJson() {
     return {
