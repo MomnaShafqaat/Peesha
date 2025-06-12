@@ -11,6 +11,8 @@ import 'package:peesha/features/employee/presentation/widgets/certificate_form.d
 import 'package:peesha/features/employee/presentation/widgets/form_section_header.dart';
 import 'package:peesha/features/employee/presentation/widgets/form_text_field.dart';
 
+
+
 class ProfileForm extends StatefulWidget {
   final Employee employee;
   final void Function(Map<String, dynamic>) onSubmit;
@@ -84,10 +86,12 @@ class _ProfileFormState extends State<ProfileForm> {
             ),
             ..._educationList.asMap().entries.map((entry) => EducationForm(
               key: ValueKey(entry.key),
+              index: entry.key,
               education: entry.value,
-              onUpdate: (e) => setState(() => _educationList[entry.key] = e),
+              onChanged: (e) => setState(() => _educationList[entry.key] = e),
               onDelete: () => setState(() => _educationList.removeAt(entry.key)),
             )),
+
 
             const SizedBox(height: 16),
 
@@ -97,8 +101,9 @@ class _ProfileFormState extends State<ProfileForm> {
             ),
             ..._experienceList.asMap().entries.map((entry) => ExperienceForm(
               key: ValueKey(entry.key),
+              index: entry.key,
               experience: entry.value,
-              onUpdate: (e) => setState(() => _experienceList[entry.key] = e),
+              onChanged: (e) => setState(() => _experienceList[entry.key] = e),
               onDelete: () => setState(() => _experienceList.removeAt(entry.key)),
             )),
 
@@ -110,6 +115,7 @@ class _ProfileFormState extends State<ProfileForm> {
             ),
             ..._certificateList.asMap().entries.map((entry) => CertificateForm(
               key: ValueKey(entry.key),
+              index: entry.key,
               certificate: entry.value,
               onUpdate: (c) => setState(() => _certificateList[entry.key] = c),
               onDelete: () => setState(() => _certificateList.removeAt(entry.key)),
