@@ -42,41 +42,48 @@ import 'package:peesha/features/employer/data/employer_model.dart';
 import 'package:peesha/services/auth_service.dart';
 import 'job_post_screen.dart';
 
-
-
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        backgroundColor: Colors.black,
+        title: const Text(
+          'Admin Dashboard',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () async {
               final shouldLogout = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
+                  backgroundColor: Colors.grey[900],
+                  title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                  content: const Text(
+                    'Are you sure you want to logout?',
+                    style: TextStyle(color: Colors.white70),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('Cancel'),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Logout'),
+                      child: const Text('Logout', style: TextStyle(color: Colors.red)),
                     ),
                   ],
                 ),
               );
 
               if (shouldLogout == true) {
-                await AuthService().signOut(); // your custom service
+                await AuthService().signOut();
                 if (context.mounted) {
                   Navigator.pushNamedAndRemoveUntil(
                     context,
@@ -89,65 +96,80 @@ class AdminHomeScreen extends StatelessWidget {
           ),
         ],
       ),
-
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               'Welcome Admin!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
 
+            OutlinedButton.icon(
+              icon: const Icon(Icons.people, color: Colors.white),
+              label: const Text(
+                'View Total Employees',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AllEmployeesScreen()),
                 );
-
-                // TODO: Navigate to total employees screen or show count
-
               },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text('View Total Employees'),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
 
+            const SizedBox(height: 20),
+
+            OutlinedButton.icon(
+              icon: const Icon(Icons.apartment, color: Colors.white),
+              label: const Text(
+                'View Total Employers',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const EmployersPage()),
                 );
-
-                // TODO: Navigate to total employers screen or show count
-
               },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text('View Total Employers'),
             ),
 
-
-
             const SizedBox(height: 20),
-            ElevatedButton(
+
+            OutlinedButton.icon(
+              icon: const Icon(Icons.work, color: Colors.white),
+              label: const Text(
+                'View Jobs',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const JobPostScreen()),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text('View Jobs'),
             ),
           ],
         ),
@@ -158,6 +180,8 @@ class AdminHomeScreen extends StatelessWidget {
 
 
 // ------------------------ All Employees Screen ------------------------
+
+
 
 class AllEmployeesScreen extends StatefulWidget {
   const AllEmployeesScreen({Key? key}) : super(key: key);
@@ -197,58 +221,103 @@ class _AllEmployeesScreenState extends State<AllEmployeesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('All Employees'),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'All Employees',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: FutureBuilder<List<Employee>>(
         future: _employeeListFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           final employees = snapshot.data;
 
           if (employees == null || employees.isEmpty) {
-            return const Center(child: Text('No employees found.'));
+            return const Center(
+              child: Text(
+                'No employees found.',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
 
-          return ListView.builder(
-            itemCount: employees.length,
-            itemBuilder: (context, index) {
-              final employee = employees[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: employee.profileImageUrl.isNotEmpty
-                        ? NetworkImage(employee.profileImageUrl)
-                        : null,
-                    child: employee.profileImageUrl.isEmpty
-                        ? const Icon(Icons.person)
-                        : null,
-                  ),
-                  title: Text(employee.fullName),
-                  subtitle: Text(employee.email),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: () {
-                      // TODO: Navigate to detailed profile page
-                    },
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  'Total Employees: ${employees.length}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: employees.length,
+                  itemBuilder: (context, index) {
+                    final employee = employees[index];
+                    return Card(
+                      color: Colors.grey[900],
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.grey[800],
+                          backgroundImage:
+                          employee.profileImageUrl.isNotEmpty
+                              ? NetworkImage(employee.profileImageUrl)
+                              : null,
+                          child: employee.profileImageUrl.isEmpty
+                              ? const Icon(Icons.person, color: Colors.white)
+                              : null,
+                        ),
+                        title: Text(
+                          employee.fullName,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          employee.email,
+                          style: TextStyle(color: Colors.grey[400]),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 }
+
+
+
 
 class EmployersPage extends StatefulWidget {
   const EmployersPage({Key? key}) : super(key: key);
@@ -265,6 +334,7 @@ class _EmployersPageState extends State<EmployersPage> {
     super.initState();
     _employerList = fetchEmployersWithProfiles();
   }
+
   Future<List<Employer>> fetchEmployersWithProfiles() async {
     final usersSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -296,49 +366,101 @@ class _EmployersPageState extends State<EmployersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Employers')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Employers',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
       body: FutureBuilder<List<Employer>>(
         future: _employerList,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
           }
-
 
           if (snapshot.hasError) {
             print('Employer fetch error: ${snapshot.error}');
-            return Center(child: Text('Error fetching employers: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Error fetching employers: ${snapshot.error}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           final employers = snapshot.data;
 
           if (employers == null || employers.isEmpty) {
-            return const Center(child: Text('No employers found.'));
+            return const Center(
+              child: Text(
+                'No employers found.',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
 
-          return ListView.builder(
-            itemCount: employers.length,
-            itemBuilder: (context, index) {
-              final emp = employers[index];
-
-              return Card(
-                margin: const EdgeInsets.all(10),
-                elevation: 3,
-                child: ListTile(
-                  title: Text(emp.companyName),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Industry: ${emp.industry}'),
-                      Text('Type: ${emp.companyType}'),
-                      Text('Email: ${emp.contactEmail}'),
-                      Text('Phone: ${emp.contactPhone}'),
-                      Text('Location: ${emp.city}, ${emp.state}, ${emp.country}'),
-                    ],
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Total Employers: ${employers.length}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: employers.length,
+                  itemBuilder: (context, index) {
+                    final emp = employers[index];
+                    return Card(
+                      color: Colors.grey[900],
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          emp.companyName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Industry: ${emp.industry}',
+                                style: TextStyle(color: Colors.grey[300])),
+                            Text('Type: ${emp.companyType}',
+                                style: TextStyle(color: Colors.grey[300])),
+                            Text('Email: ${emp.contactEmail}',
+                                style: TextStyle(color: Colors.grey[300])),
+                            Text('Phone: ${emp.contactPhone}',
+                                style: TextStyle(color: Colors.grey[300])),
+                            Text(
+                                'Location: ${emp.city}, ${emp.state}, ${emp.country}',
+                                style: TextStyle(color: Colors.grey[300])),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -347,6 +469,8 @@ class _EmployersPageState extends State<EmployersPage> {
 }
 
 // ------------------------ Job Post Screen ------------------------
+
+
 class JobPostScreen extends StatelessWidget {
   const JobPostScreen({super.key});
 
@@ -361,18 +485,29 @@ class JobPostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('All Posted Jobs'),
+        title: const Text(
+          'All Posted Jobs',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('Job').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No jobs found.'));
+            return const Center(
+              child: Text('No jobs found.', style: TextStyle(color: Colors.white)),
+            );
           }
 
           final jobs = snapshot.data!.docs;
@@ -385,16 +520,32 @@ class JobPostScreen extends StatelessWidget {
               final job = Job.fromJson(doc.data() as Map<String, dynamic>, doc.id);
 
               return Card(
+                color: Colors.grey[900],
                 margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ListTile(
-                  title: Text(job.title),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${job.location} • ${job.jobType}'),
-                      Text('Employer: ${job.employerName}'),
-                      Text('Deadline: ${job.dateDeadline}'),
-                    ],
+                  title: Text(
+                    job.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${job.location} • ${job.jobType}',
+                            style: TextStyle(color: Colors.grey[300])),
+                        Text('Employer: ${job.employerName}',
+                            style: TextStyle(color: Colors.grey[300])),
+                        Text('Deadline: ${job.dateDeadline}',
+                            style: TextStyle(color: Colors.grey[300])),
+                      ],
+                    ),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -402,12 +553,16 @@ class JobPostScreen extends StatelessWidget {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Delete Job'),
-                          content: const Text('Are you sure you want to delete this job?'),
+                          backgroundColor: Colors.grey[850],
+                          title: const Text('Delete Job', style: TextStyle(color: Colors.white)),
+                          content: const Text(
+                            'Are you sure you want to delete this job?',
+                            style: TextStyle(color: Colors.white70),
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel'),
+                              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
