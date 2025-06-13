@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:peesha/features/auth/presentation/screens/login_page.dart';
 import 'package:peesha/features/employer/data/employer_model.dart';
 
+
+
 class EmployerProfileScreen extends StatefulWidget {
   const EmployerProfileScreen({super.key});
 
@@ -68,10 +70,49 @@ class _EmployerProfileScreenState extends State<EmployerProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Company Profile'),
-      ),
-      body: user == null
+              appBar:
+        AppBar(
+            title: const Text('Company Profile'),
+            actions: [
+            IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+            final shouldLogout = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+            title: const Text('Logout'),
+            content: const Text('Are you sure you want to logout?'),
+            actions: [
+            TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+            ),
+            TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout'),
+            ),
+            ],
+            ),
+            );
+
+    if (shouldLogout == true) {
+    await FirebaseAuth.instance.signOut();
+    if (context.mounted) {
+    Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (_) => const LoginScreen()),
+    (route) => false,
+    );
+    }
+    }
+    },
+    ),
+    ],
+    ),
+
+
+    body: user == null
           ? Center(
         child: ElevatedButton(
           onPressed: () {

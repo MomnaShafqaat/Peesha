@@ -1,11 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+/*import 'package:flutter/material.dart';
 import 'package:peesha/services/auth_service.dart';
-import 'package:peesha/features/employer/data/job_model.dart';
-import 'package:peesha/features/employee/data/employee_model.dart';
-import 'package:peesha/features/employer/data/employer_model.dart';
-
-
 
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
@@ -21,14 +15,81 @@ class AdminHomeScreen extends StatelessWidget {
             onPressed: () async {
               await AuthService().signOut();
               Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/role-selection',
-                    (route) => false,
+                  context,
+                  '/role-selection',
+                      (route) => false
               );
             },
           ),
         ],
       ),
+      body: const Center(
+        child: Text(
+          'Welcome Admin!',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}*/
+
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:peesha/services/auth_service.dart';
+import 'package:peesha/features/employer/data/job_model.dart';
+import 'package:peesha/features/employee/data/employee_model.dart';
+import 'package:peesha/features/employer/data/employer_model.dart';
+import 'package:peesha/services/auth_service.dart';
+import 'job_post_screen.dart';
+
+
+
+class AdminHomeScreen extends StatelessWidget {
+  const AdminHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Admin Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              final shouldLogout = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Logout'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldLogout == true) {
+                await AuthService().signOut(); // your custom service
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/role-selection',
+                        (route) => false,
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
+
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -189,41 +250,71 @@ class _AllEmployeesScreenState extends State<AllEmployeesScreen> {
   }
 }
 
-
-
-class EmployersPage extends StatelessWidget {
+class EmployersPage extends StatefulWidget {
   const EmployersPage({Key? key}) : super(key: key);
+
+  @override
+  State<EmployersPage> createState() => _EmployersPageState();
+}
+
+class _EmployersPageState extends State<EmployersPage> {
+  late Future<List<Employer>> _employerList;
+
+  @override
+  void initState() {
+    super.initState();
+    _employerList = fetchEmployersWithProfiles();
+  }
+  Future<List<Employer>> fetchEmployersWithProfiles() async {
+    final usersSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'employer')
+        .get();
+
+    final List<Employer> employers = [];
+
+    for (var userDoc in usersSnapshot.docs) {
+      final data = userDoc.data() as Map<String, dynamic>;
+      final uid = data['uid'] ?? userDoc.id;
+
+      final profileSnapshot = await FirebaseFirestore.instance
+          .collection('employerProfiles')
+          .doc(uid)
+          .get();
+
+      if (profileSnapshot.exists) {
+        final profileData = profileSnapshot.data()!;
+        employers.add(Employer.fromJson(profileData));
+      } else {
+        print('⚠ No employer profile found for UID: $uid');
+      }
+    }
+
+    return employers;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Employers'),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .where('role', isEqualTo: 'employer')
-            .snapshots(),
+      appBar: AppBar(title: const Text('Employers')),
+      body: FutureBuilder<List<Employer>>(
+        future: _employerList,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
+
           if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching employers.'));
+            print('Employer fetch error: ${snapshot.error}');
+            return Center(child: Text('Error fetching employers: ${snapshot.error}'));
           }
 
-          final docs = snapshot.data?.docs ?? [];
+          final employers = snapshot.data;
 
-          if (docs.isEmpty) {
+          if (employers == null || employers.isEmpty) {
             return const Center(child: Text('No employers found.'));
           }
-
-          final employers = docs
-              .map((doc) =>
-              Employer.fromJson(doc.data() as Map<String, dynamic>))
-              .toList();
 
           return ListView.builder(
             itemCount: employers.length,
@@ -254,7 +345,6 @@ class EmployersPage extends StatelessWidget {
     );
   }
 }
-
 
 // ------------------------ Job Post Screen ------------------------
 class JobPostScreen extends StatelessWidget {

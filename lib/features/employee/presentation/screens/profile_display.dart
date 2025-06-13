@@ -4,7 +4,10 @@ import 'package:peesha/features/employee/presentation/widgets/form_section_heade
 import 'package:peesha/features/employee/data/education.dart';
 import 'package:peesha/features/employee/data/experience.dart';
 import 'package:peesha/features/employee/data/certificate.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:peesha/services/auth_service.dart';
+import 'package:peesha/features/auth/presentation/screens/login_page.dart';
 class ProfileDisplay extends StatelessWidget {
   final Employee employee;
 
@@ -13,7 +16,40 @@ class ProfileDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Employee Profile')),
+      appBar: AppBar(
+        title: const Text('Employee Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              final shouldLogout = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Logout')),
+                  ],
+                ),
+              );
+
+              if (shouldLogout == true) {
+                await FirebaseAuth.instance.signOut();
+
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
