@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import '../widgets/apply_job_modal.dart';
+import 'apply_job_flow_screen.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({super.key});
@@ -79,15 +80,43 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                                 OutlinedButton.icon(
                                   onPressed: () async {
                                     // TODO: Add save logic here
-                                    // Add to savedJobs collection or field
                                   },
                                   icon: const Icon(Icons.bookmark_border),
                                   label: const Text('Save'),
                                 ),
                                 ElevatedButton.icon(
-                                  onPressed: () async {
-                                    // TODO: Add apply logic here
-                                    // Save to jobApplications collection
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => ApplyJobModal(
+                                        onUploadResume: () {
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ApplyJobFlowScreen(
+                                                jobId: jobId,
+                                                jobTitle: job['title'] ?? 'N/A',
+                                                companyName: job['company'] ?? 'Unknown',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        onUsePeeshaResume: () {
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ApplyJobFlowScreen(
+                                                jobId: jobId,
+                                                jobTitle: job['title'] ?? 'N/A',
+                                                companyName: job['company'] ?? 'Unknown',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
                                   },
                                   icon: const Icon(Icons.send),
                                   label: const Text('Apply'),

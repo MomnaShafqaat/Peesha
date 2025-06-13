@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
-
-import 'employee_profile_screen.dart';
 import 'employee_profile_setup.dart';
 import 'employee_home_screen.dart';
-
-// You can create this screen later for showing saved/applied jobs
-// import 'employee_jobs_screen.dart';
+import 'employee_my_jobs_screen.dart'; // ✅ Import the new screen
+import 'employee_messages_screen.dart';
+import 'employee_profile_screen.dart';
 
 class EmployeeDashboard extends StatefulWidget {
   const EmployeeDashboard({super.key});
@@ -21,14 +17,18 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
 
   final List<Widget> _screens = [
     EmployeeHomeScreen(),
-    // EmployeeJobsScreen(), // You can add this later
+    MyJobsScreen(), // ✅ New screen
+    EmployeeMessagesScreen(),
     EmployeeProfileScreen(),
+
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Welcome, Employee'),
+        backgroundColor: Colors.deepPurple,
         actions: [
           IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
         ],
@@ -37,15 +37,16 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.deepPurple,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
-          // Add this when EmployeeJobsScreen is created
-          // BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'My Jobs'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),// ✅ Added
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
