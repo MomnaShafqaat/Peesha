@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:peesha/services/auth_service.dart';
 import 'package:peesha/features/employer/data/job_model.dart';
-<<<<<<< Updated upstream
 import 'package:peesha/features/employee/data/employee_model.dart';
 import 'package:peesha/features/employer/data/employer_model.dart';
-=======
 
->>>>>>> Stashed changes
+
+
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
@@ -42,14 +41,14 @@ class AdminHomeScreen extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-<<<<<<< Updated upstream
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AllEmployeesScreen()),
                 );
-=======
+
                 // TODO: Navigate to total employees screen or show count
->>>>>>> Stashed changes
+
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
@@ -59,24 +58,23 @@ class AdminHomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-<<<<<<< Updated upstream
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const EmployersPage()),
                 );
-=======
+
                 // TODO: Navigate to total employers screen or show count
->>>>>>> Stashed changes
+
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text('View Total Employers'),
             ),
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
+
+
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -97,7 +95,7 @@ class AdminHomeScreen extends StatelessWidget {
   }
 }
 
-<<<<<<< Updated upstream
+
 // ------------------------ All Employees Screen ------------------------
 
 class AllEmployeesScreen extends StatefulWidget {
@@ -259,9 +257,6 @@ class EmployersPage extends StatelessWidget {
 
 
 // ------------------------ Job Post Screen ------------------------
-
-=======
->>>>>>> Stashed changes
 class JobPostScreen extends StatelessWidget {
   const JobPostScreen({super.key});
 
