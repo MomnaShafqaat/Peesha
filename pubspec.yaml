@@ -37,20 +37,22 @@ dependencies:
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.3
   cloud_firestore: ^5.6.8
-  firebase_messaging: ^15.2.7
+
   firebase_storage: ^12.4.5
   provider: ^6.0.5
   google_sign_in: ^5.4.2
   intl: ^0.20.2
   image_picker: ^0.8.7
   # File Handling
-  file_picker: 5.2.6
+  file_picker: ^10.2.0
+  file_picker_desktop: ^1.2.0
+  filepicker_macos: ^0.0.6
+  filepicker_windows: ^2.1.4
   # Form Validation
   form_field_validator: ^1.1.0
   url_launcher: ^6.2.5
   supabase_flutter: ^1.10.9
   http: ^0.13.6
-  firebase_messaging: ^14.7.5
 
 
   # Image Handling
