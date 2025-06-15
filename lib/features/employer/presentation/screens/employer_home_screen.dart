@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:peesha/features/employer/presentation/screens/employer_profile_screen.dart';
 import 'package:peesha/features/employer/presentation/screens/job_post_screen.dart';
 import 'package:peesha/features/employer/presentation/screens/job_list_screen.dart';
+import 'package:peesha/features/employer/presentation/screens/job_application_screen.dart'; // 👈 New import
 
 class EmployerHomeScreen extends StatefulWidget {
   const EmployerHomeScreen({super.key});
@@ -16,6 +17,7 @@ class _EmployerHomeScreenState extends State<EmployerHomeScreen> {
   final List<Widget> _screens = [
     const JobListScreen(),
     const JobPostScreen(),
+    const JobApplicationsScreen(), // 👈 New screen
     const EmployerProfileScreen(),
   ];
 
@@ -36,6 +38,10 @@ class _EmployerHomeScreenState extends State<EmployerHomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.post_add),
             label: 'Post Job',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Applications',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
